@@ -586,7 +586,7 @@ class GeoQuerySet(QuerySet):
 
                 if not geography and geodetic:
                     # Spherical distance calculation is needed (because the geographic
-                    # field is geodetic). However, the PostGIS ST_distance_sphere/spheroid()
+                    # field is geodetic). However, the PostGIS ST_DistanceSphere/Spheroid()
                     # procedures may only do queries from point columns to point geometries
                     # some error checking is required.
                     if not backend.geography:

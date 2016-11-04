@@ -91,13 +91,13 @@ class PostGISDistanceOperator(PostGISOperator):
             template_params = self.check_raster(lookup, template_params)
             sql_template = self.sql_template
             if len(lookup.rhs) == 3 and lookup.rhs[-1] == 'spheroid':
-                template_params.update({'op': self.op, 'func': 'ST_Distance_Spheroid'})
+                template_params.update({'op': self.op, 'func': 'ST_DistanceSpheroid'})
                 sql_template = '%(func)s(%(lhs)s, %(rhs)s, %%s) %(op)s %(value)s'
-                # Using distance_spheroid requires the spheroid of the field as
+                # Using distanceSpheroid requires the spheroid of the field as
                 # a parameter.
                 sql_params.insert(1, lookup.lhs.output_field._spheroid)
             else:
-                template_params.update({'op': self.op, 'func': 'ST_Distance_Sphere'})
+                template_params.update({'op': self.op, 'func': 'ST_DistanceSphere'})
             return sql_template % template_params, sql_params
         return super(PostGISDistanceOperator, self).as_sql(connection, lookup, template_params, sql_params)
 
@@ -148,7 +148,7 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
     unsupported_functions = set()
     function_names = {
         'BoundingCircle': 'ST_MinimumBoundingCircle',
-        'MemSize': 'ST_Mem_Size',
+        'MemSize': 'ST_MemSize',
         'NumPoints': 'ST_NPoints',
     }
 
@@ -163,8 +163,8 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         self.collect = prefix + 'Collect'
         self.difference = prefix + 'Difference'
         self.distance = prefix + 'Distance'
-        self.distance_sphere = prefix + 'distance_sphere'
-        self.distance_spheroid = prefix + 'distance_spheroid'
+        self.distance_sphere = prefix + 'DistanceSphere'
+        self.distance_spheroid = prefix + 'DistanceSpheroid'
         self.envelope = prefix + 'Envelope'
         self.extent = prefix + 'Extent'
         self.extent3d = prefix + '3DExtent'
