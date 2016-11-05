@@ -599,8 +599,8 @@ where the second entry is the band index.
 With PostGIS, on every distance lookup but :lookup:`dwithin`, an optional
 element, ``'spheroid'``, may be included to tell GeoDjango to use the more
 accurate spheroid distance calculation functions on fields with a geodetic
-coordinate system (e.g., ``ST_Distance_Spheroid`` would be used instead of
-``ST_Distance_Sphere``). The simpler ``ST_Distance`` function is used with
+coordinate system (e.g., ``ST_DistanceSpheroid`` would be used instead of
+``ST_DistanceSphere``). The simpler ``ST_Distance`` function is used with
 projected coordinate systems. Rasters are converted to geometries for spheroid
 based lookups.
 
@@ -623,7 +623,7 @@ Example::
 ==========  ==================================================
 Backend     SQL Equivalent
 ==========  ==================================================
-PostGIS     ``ST_Distance/ST_Distance_Sphere(poly, geom) > 5``
+PostGIS     ``ST_Distance/ST_DistanceSphere(poly, geom) > 5``
 Oracle      ``SDO_GEOM.SDO_DISTANCE(poly, geom, 0.05) > 5``
 SpatiaLite  ``Distance(poly, geom) > 5``
 ==========  ==================================================
@@ -643,7 +643,7 @@ Example::
 ==========  ===================================================
 Backend     SQL Equivalent
 ==========  ===================================================
-PostGIS     ``ST_Distance/ST_Distance_Sphere(poly, geom) >= 5``
+PostGIS     ``ST_Distance/ST_DistanceSphere(poly, geom) >= 5``
 Oracle      ``SDO_GEOM.SDO_DISTANCE(poly, geom, 0.05) >= 5``
 SpatiaLite  ``Distance(poly, geom) >= 5``
 ==========  ===================================================
@@ -663,7 +663,7 @@ Example::
 ==========  ==================================================
 Backend     SQL Equivalent
 ==========  ==================================================
-PostGIS     ``ST_Distance/ST_Distance_Sphere(poly, geom) < 5``
+PostGIS     ``ST_Distance/ST_DistanceSphere(poly, geom) < 5``
 Oracle      ``SDO_GEOM.SDO_DISTANCE(poly, geom, 0.05) < 5``
 SpatiaLite  ``Distance(poly, geom) < 5``
 ==========  ==================================================
@@ -683,7 +683,7 @@ Example::
 ==========  ===================================================
 Backend     SQL Equivalent
 ==========  ===================================================
-PostGIS     ``ST_Distance/ST_Distance_Sphere(poly, geom) <= 5``
+PostGIS     ``ST_Distance/ST_DistanceSphere(poly, geom) <= 5``
 Oracle      ``SDO_GEOM.SDO_DISTANCE(poly, geom, 0.05) <= 5``
 SpatiaLite  ``Distance(poly, geom) <= 5``
 ==========  ===================================================
