@@ -238,6 +238,20 @@ class DistanceTest(TestCase):
             for i, z in enumerate(qs):
                 self.assertAlmostEqual(z.distance.m, dists_m[i], 5)
 
+    @skipUnlessDBFeature("has_distance_method")
+    @ignore_warnings(category=RemovedInDjango20Warning)
+    def test_distance_not_deprecated(self):
+        if postgis:
+            hillsdale = AustraliaCity.objects.get(name='Hillsdale')
+            qs = AustraliaCity.objects.exclude(id=hillsdale.id).distance(hillsdale.point, spheroid=True)
+            dists = [c.distance.m for c in qs]
+
+            # Make sure that we're not using a deprecated distance function
+            # behind the scenes; see https://code.djangoproject.com/ticket/27448
+            notices = connection.connection.notices
+            for notice in notices:
+                self.assertNotIn('deprecated', notice)
+
     @skipUnlessDBFeature("supports_distances_lookups")
     def test_distance_lookups(self):
         """
