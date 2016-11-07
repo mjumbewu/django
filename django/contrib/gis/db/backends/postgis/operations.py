@@ -86,18 +86,30 @@ class PostGISOperator(SpatialOperator):
 class PostGISDistanceOperator(PostGISOperator):
     sql_template = '%(func)s(%(lhs)s, %(rhs)s) %(op)s %(value)s'
 
+    def __init__(self, geography=False, raster=False, post_22=False, **kwargs):
+        self.post_22 = post_22  # A flag that determines whether we're using
+                                # PostGIS 2.2 or above.
+        super(PostGISDistanceOperator, self).__init__(geography=geography, raster=raster, **kwargs)
+
     def as_sql(self, connection, lookup, template_params, sql_params):
+        if self.post_22:
+            spheroid_func = 'ST_DistanceSpheroid'
+            sphere_func = 'ST_DistanceSphere'
+        else:
+            spheroid_func = 'ST_Distance_Spheroid'
+            sphere_fun  = 'ST_Distance_Sphere'
+
         if not lookup.lhs.output_field.geography and lookup.lhs.output_field.geodetic(connection):
             template_params = self.check_raster(lookup, template_params)
             sql_template = self.sql_template
             if len(lookup.rhs) == 3 and lookup.rhs[-1] == 'spheroid':
-                template_params.update({'op': self.op, 'func': 'ST_DistanceSpheroid'})
+                template_params.update({'op': self.op, 'func': spheroid_func})
                 sql_template = '%(func)s(%(lhs)s, %(rhs)s, %%s) %(op)s %(value)s'
                 # Using distanceSpheroid requires the spheroid of the field as
                 # a parameter.
                 sql_params.insert(1, lookup.lhs.output_field._spheroid)
             else:
-                template_params.update({'op': self.op, 'func': 'ST_DistanceSphere'})
+                template_params.update({'op': self.op, 'func': sphere_func})
             return sql_template % template_params, sql_params
         return super(PostGISDistanceOperator, self).as_sql(connection, lookup, template_params, sql_params)
 
@@ -163,8 +175,18 @@ class PostGISOperations(BaseSpatialOperations, DatabaseOperations):
         self.collect = prefix + 'Collect'
         self.difference = prefix + 'Difference'
         self.distance = prefix + 'Distance'
-        self.distance_sphere = prefix + 'DistanceSphere'
-        self.distance_spheroid = prefix + 'DistanceSpheroid'
+        if self.spatial_version >= (2, 2):
+            self.distance_sphere = prefix + 'DistanceSphere'
+            self.distance_spheroid = prefix + 'DistanceSpheroid'
+            self.gis_operators.update({
+                'distance_gt': PostGISDistanceOperator(func='ST_Distance', op='>', geography=True, post_22=True),
+                'distance_gte': PostGISDistanceOperator(func='ST_Distance', op='>=', geography=True, post_22=True),
+                'distance_lt': PostGISDistanceOperator(func='ST_Distance', op='<', geography=True, post_22=True),
+                'distance_lte': PostGISDistanceOperator(func='ST_Distance', op='<=', geography=True, post_22=True),
+            })
+        else:
+            self.distance_sphere = prefix + 'Distance_Sphere'
+            self.distance_spheroid = prefix + 'Distance_Spheroid'
         self.envelope = prefix + 'Envelope'
         self.extent = prefix + 'Extent'
         self.extent3d = prefix + '3DExtent'

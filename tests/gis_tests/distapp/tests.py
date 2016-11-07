@@ -7,7 +7,9 @@ from django.contrib.gis.geos import GEOSGeometry, LineString, Point
 from django.contrib.gis.measure import D  # alias for Distance
 from django.db import connection
 from django.db.models import F, Q
-from django.test import TestCase, ignore_warnings, skipUnlessDBFeature
+from django.test import (
+    TestCase, ignore_warnings, skipUnlessDBFeature, override_settings
+)
 from django.utils.deprecation import RemovedInDjango20Warning
 
 from ..utils import no_oracle, oracle, postgis, spatialite
@@ -251,6 +253,24 @@ class DistanceTest(TestCase):
             notices = connection.connection.notices
             for notice in notices:
                 self.assertNotIn('deprecated', notice)
+    #
+    # @skipUnlessDBFeature("has_distance_method")
+    # @ignore_warnings(category=RemovedInDjango20Warning)
+    # @override_settings(POSTGIS_VERSION='2.1.0')
+    # def test_correct_distance_func_postgis_pre22(self):
+    #     if postgis:
+    #         hillsdale = AustraliaCity.objects.get(name='Hillsdale')
+    #         qs = AustraliaCity.objects.exclude(id=hillsdale.id).distance(hillsdale.point, spheroid=True)
+    #         self.assertIn('ST_Distance_Spher', str(qs.query))
+    #
+    # @skipUnlessDBFeature("has_distance_method")
+    # @ignore_warnings(category=RemovedInDjango20Warning)
+    # @override_settings(POSTGIS_VERSION='2.2.0')
+    # def test_correct_distance_func_postgis_post22(self):
+    #     if postgis:
+    #         hillsdale = AustraliaCity.objects.get(name='Hillsdale')
+    #         qs = AustraliaCity.objects.exclude(id=hillsdale.id).distance(hillsdale.point, spheroid=True)
+    #         self.assertNotIn('ST_Distance_Spher', str(qs.query))
 
     @skipUnlessDBFeature("supports_distances_lookups")
     def test_distance_lookups(self):
